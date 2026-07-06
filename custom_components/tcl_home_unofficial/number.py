@@ -8,7 +8,7 @@ from homeassistant.const import UnitOfTemperature, PERCENTAGE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .calculations import celsius_to_fahrenheit
+from .calculations import celsius_to_fahrenheit, fahrenheit_to_celsius
 from .config_entry import New_NameConfigEntry
 from .coordinator import IotDeviceCoordinator
 from .device import Device
@@ -19,6 +19,26 @@ from .data_storage import get_stored_data, safe_get_value, safe_set_value,set_st
 from .tcl_entity_base import TclEntityBase
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def is_fahrenheit_device(device: Device) -> bool:
+    """True when the unit is running in Fahrenheit mode (temperatureType == 1)."""
+    return getattr(device.data, "temperature_type", 0) == 1
+
+
+def target_temp_number_value(device: Device) -> int | float:
+    """Target setpoint for the number entity, in the unit it presents."""
+    if is_fahrenheit_device(device):
+        tft = getattr(device.data, "target_fahrenheit_temp", -1)
+        if tft is not None and tft != -1:
+            return tft
+        return celsius_to_fahrenheit(device.data.target_temperature)
+    if (
+        DeviceFeatureEnum.NUMBER_TARGET_TEMPERATURE_ALLOW_HALF_DIGITS
+        in device.supported_features
+    ):
+        return float(device.data.target_temperature)
+    return int(device.data.target_temperature)
 
 
 class DesiredStateHandlerForNumber:
@@ -72,6 +92,27 @@ class DesiredStateHandlerForNumber:
 
         min_temp = safe_get_value(self.device.storage,"user_config.settings.min_temp",18)
         max_temp = safe_get_value(self.device.storage,"user_config.settings.max_temp",36)
+
+        if is_fahrenheit_device(self.device):
+            # Entity presents Fahrenheit, so ``value`` arrives in °F. Send the
+            # authoritative targetFahrenheitTemp plus its Celsius equivalent.
+            min_f = celsius_to_fahrenheit(min_temp)
+            max_f = celsius_to_fahrenheit(max_temp)
+            if value < min_f or value > max_f:
+                _LOGGER.error(
+                    "Invalid target temperature (°F): %s (Min:%s Max:%s)",
+                    value,
+                    min_f,
+                    max_f,
+                )
+                return
+            desired_state = {
+                "targetTemperature": fahrenheit_to_celsius(value),
+                "targetFahrenheitTemp": round(value),
+            }
+            return await self.coordinator.get_aws_iot().async_set_desired_state(
+                self.device.device_id, desired_state
+            )
 
         if value < min_temp or value > max_temp:
             _LOGGER.error(
@@ -165,12 +206,7 @@ async def async_setup_entry(
                     name="Set Target Temperature",
                     type="SetTargetTemperature",
                     available_fn=lambda device: is_allowed(device),
-                    current_value_fn=lambda device: float(
-                        device.data.target_temperature
-                    )
-                    if DeviceFeatureEnum.NUMBER_TARGET_TEMPERATURE_ALLOW_HALF_DIGITS
-                    in device.supported_features
-                    else int(device.data.target_temperature),
+                    current_value_fn=lambda device: target_temp_number_value(device),
                 )
             )
 
@@ -279,8 +315,18 @@ class TemperatureHandler(TclEntityBase, NumberEntity):
         self._attr_native_value = self.current_value_fn(self.device)
 
         self._attr_native_min_value = safe_get_value(self.device.storage,"user_config.settings.min_temp",18)
-        self._attr_native_max_value = safe_get_value(self.device.storage,"user_config.settings.max_temp",36)  
-        self._attr_native_step = safe_get_value(self.device.storage,"user_config.settings.native_temp_step",1)          
+        self._attr_native_max_value = safe_get_value(self.device.storage,"user_config.settings.max_temp",36)
+        self._attr_native_step = safe_get_value(self.device.storage,"user_config.settings.native_temp_step",1)
+
+        if (
+            deviceFeature == DeviceFeatureEnum.NUMBER_TARGET_TEMPERATURE
+            and is_fahrenheit_device(self.device)
+        ):
+            # Match the climate entity: present °F for Fahrenheit-native units.
+            self._attr_native_unit_of_measurement = UnitOfTemperature.FAHRENHEIT
+            self._attr_native_min_value = celsius_to_fahrenheit(self._attr_native_min_value)
+            self._attr_native_max_value = celsius_to_fahrenheit(self._attr_native_max_value)
+            self._attr_native_step = 1
 
     @property
     def available(self) -> bool:

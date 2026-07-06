@@ -38,8 +38,35 @@ from .select import DesiredStateHandlerForSelect
 from .switch import DesiredStateHandlerForSwitch
 from .tcl_entity_base import TclEntityBase
 from .data_storage import safe_get_value
+from .calculations import celsius_to_fahrenheit
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def is_fahrenheit_device(device: Device) -> bool:
+    """True when the unit is running in Fahrenheit mode (temperatureType == 1)."""
+    return getattr(device.data, "temperature_type", 0) == 1
+
+
+def get_target_temp_display(device: Device) -> int | float:
+    """Target setpoint in the unit the entity presents.
+
+    For Fahrenheit devices, read the authoritative ``targetFahrenheitTemp`` the
+    device reports instead of round-tripping through truncated Celsius.
+    """
+    if is_fahrenheit_device(device):
+        tft = getattr(device.data, "target_fahrenheit_temp", -1)
+        if tft is not None and tft != -1:
+            return tft
+        return celsius_to_fahrenheit(device.data.target_temperature)
+    return device.data.target_temperature
+
+
+def get_current_temp_display(device: Device) -> int | float:
+    """Current temperature in the unit the entity presents."""
+    if is_fahrenheit_device(device):
+        return celsius_to_fahrenheit(device.data.current_temperature)
+    return device.data.current_temperature
 
 
 def get_fan_speed_feature(device: Device) -> str:
@@ -149,8 +176,10 @@ async def async_setup_entry(
                     options_horizontal_air_direction=[
                         e.value for e in LeftAndRightAirSupplyVectorEnum
                     ],
-                    current_target_temp_fn=lambda device: device.data.target_temperature,
-                    current_temp_fn=lambda device: device.data.current_temperature,
+                    current_target_temp_fn=lambda device: get_target_temp_display(
+                        device
+                    ),
+                    current_temp_fn=lambda device: get_current_temp_display(device),
                 )
             )
 
@@ -306,12 +335,23 @@ class ClimateHandler(TclEntityBase, ClimateEntity):
         self._hvac_modes = options_mode + [HVACMode.OFF]
 
         self._hvac_action = None
-        self._attr_temperature_unit = UnitOfTemperature.CELSIUS
 
+        _min_temp_c = safe_get_value(self.device.storage,"user_config.settings.min_temp",18)
+        _max_temp_c = safe_get_value(self.device.storage,"user_config.settings.max_temp",36)
+        if is_fahrenheit_device(device):
+            # Device operates natively in Fahrenheit: present the entity in °F,
+            # every whole-degree reachable, no lossy Celsius round-trip.
+            self._unit_of_measurement = UnitOfTemperature.FAHRENHEIT
+            self._attr_temperature_unit = UnitOfTemperature.FAHRENHEIT
+            self._attr_min_temp = celsius_to_fahrenheit(_min_temp_c)
+            self._attr_max_temp = celsius_to_fahrenheit(_max_temp_c)
+            self._attr_target_temperature_step = 1
+        else:
+            self._attr_temperature_unit = UnitOfTemperature.CELSIUS
+            self._attr_min_temp = _min_temp_c
+            self._attr_max_temp = _max_temp_c
+            self._attr_target_temperature_step = safe_get_value(self.device.storage,"user_config.settings.native_temp_step",1)
         self._target_temperature = self.current_target_temp_fn(device)
-        self._attr_min_temp = safe_get_value(self.device.storage,"user_config.settings.min_temp",18)
-        self._attr_max_temp = safe_get_value(self.device.storage,"user_config.settings.max_temp",36)
-        self._attr_target_temperature_step = safe_get_value(self.device.storage,"user_config.settings.native_temp_step",1)                
 
     def refresh_device(self) -> None:
         self.device = self.coordinator.get_device_by_id(self.device.device_id)

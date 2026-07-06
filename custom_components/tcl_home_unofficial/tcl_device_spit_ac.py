@@ -17,8 +17,10 @@ class TCL_SplitAC_DeviceData:
         self.power_switch               = int(try_get_value(delta, aws_thing_state, "powerSwitch", -1))
         self.beep_switch                = int(try_get_value(delta, aws_thing_state, "beepSwitch", -1))
         self.screen                     = int(try_get_value(delta, aws_thing_state, "screen", -1))
-        self.target_temperature         = int(try_get_value(delta, aws_thing_state, "targetTemperature", -1))
-        self.current_temperature        = int(try_get_value(delta, aws_thing_state, "currentTemperature", -1))
+        self.target_temperature         = float(try_get_value(delta, aws_thing_state, "targetTemperature", -1))
+        self.current_temperature        = float(try_get_value(delta, aws_thing_state, "currentTemperature", -1))
+        self.target_fahrenheit_temp     = int(try_get_value(delta, aws_thing_state, "targetFahrenheitTemp", -1))
+        self.temperature_type           = int(try_get_value(delta, aws_thing_state, "temperatureType", 0))
         self.work_mode                  = int(try_get_value(delta, aws_thing_state, "workMode", -1))
         self.high_temperature_wind      = int(try_get_value(delta, aws_thing_state, "highTemperatureWind", -1))
         self.turbo                      = int(try_get_value(delta, aws_thing_state, "turbo", -1))
@@ -50,8 +52,10 @@ class TCL_SplitAC_DeviceData:
     device_id: str
     power_switch: int | bool
     beep_switch: int | bool
-    target_temperature: int
-    current_temperature: int
+    target_temperature: float
+    current_temperature: float
+    target_fahrenheit_temp: int
+    temperature_type: int
     high_temperature_wind: int
     turbo: int
     silence_switch: int
