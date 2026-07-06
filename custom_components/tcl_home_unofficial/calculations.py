@@ -8,6 +8,20 @@ def fahrenheit_to_celsius(fahrenheit: int | float) -> float:
     return round(((fahrenheit - 32) * (5 / 9)) * 2) / 2
 
 
+def is_fahrenheit_device(device) -> bool:
+    """True when the unit is running in Fahrenheit mode (temperatureType == 1)."""
+    return getattr(device.data, "temperature_type", 0) == 1
+
+
+def fahrenheit_target_temp(device) -> int | float:
+    """Authoritative °F setpoint: targetFahrenheitTemp as reported by the
+    device, falling back to converting the Celsius setpoint."""
+    tft = getattr(device.data, "target_fahrenheit_temp", -1)
+    if tft is not None and tft != -1:
+        return tft
+    return celsius_to_fahrenheit(device.data.target_temperature)
+
+
 def try_get_value(delta: dict, state: dict, key: str, default=any):
     if key in delta:
         return delta.get(key, default)

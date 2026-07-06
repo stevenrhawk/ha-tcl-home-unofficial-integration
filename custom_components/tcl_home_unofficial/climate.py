@@ -37,14 +37,13 @@ from .select import DesiredStateHandlerForSelect
 from .switch import DesiredStateHandlerForSwitch
 from .tcl_entity_base import TclEntityBase
 from .data_storage import safe_get_value
-from .calculations import celsius_to_fahrenheit
+from .calculations import (
+    celsius_to_fahrenheit,
+    fahrenheit_target_temp,
+    is_fahrenheit_device,
+)
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def is_fahrenheit_device(device: Device) -> bool:
-    """True when the unit is running in Fahrenheit mode (temperatureType == 1)."""
-    return getattr(device.data, "temperature_type", 0) == 1
 
 
 def get_target_temp_display(device: Device) -> int | float:
@@ -54,10 +53,7 @@ def get_target_temp_display(device: Device) -> int | float:
     device reports instead of round-tripping through truncated Celsius.
     """
     if is_fahrenheit_device(device):
-        tft = getattr(device.data, "target_fahrenheit_temp", -1)
-        if tft is not None and tft != -1:
-            return tft
-        return celsius_to_fahrenheit(device.data.target_temperature)
+        return fahrenheit_target_temp(device)
     return device.data.target_temperature
 
 

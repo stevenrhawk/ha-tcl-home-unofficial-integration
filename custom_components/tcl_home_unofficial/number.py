@@ -8,7 +8,12 @@ from homeassistant.const import UnitOfTemperature, PERCENTAGE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .calculations import celsius_to_fahrenheit, fahrenheit_to_celsius
+from .calculations import (
+    celsius_to_fahrenheit,
+    fahrenheit_target_temp,
+    fahrenheit_to_celsius,
+    is_fahrenheit_device,
+)
 from .config_entry import New_NameConfigEntry
 from .coordinator import IotDeviceCoordinator
 from .device import Device
@@ -21,18 +26,10 @@ from .tcl_entity_base import TclEntityBase
 _LOGGER = logging.getLogger(__name__)
 
 
-def is_fahrenheit_device(device: Device) -> bool:
-    """True when the unit is running in Fahrenheit mode (temperatureType == 1)."""
-    return getattr(device.data, "temperature_type", 0) == 1
-
-
 def target_temp_number_value(device: Device) -> int | float:
     """Target setpoint for the number entity, in the unit it presents."""
     if is_fahrenheit_device(device):
-        tft = getattr(device.data, "target_fahrenheit_temp", -1)
-        if tft is not None and tft != -1:
-            return tft
-        return celsius_to_fahrenheit(device.data.target_temperature)
+        return fahrenheit_target_temp(device)
     if (
         DeviceFeatureEnum.NUMBER_TARGET_TEMPERATURE_ALLOW_HALF_DIGITS
         in device.supported_features
