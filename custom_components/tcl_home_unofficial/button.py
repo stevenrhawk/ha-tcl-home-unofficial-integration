@@ -10,7 +10,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .config_entry import New_NameConfigEntry
 from .coordinator import IotDeviceCoordinator
-from .device import Device, Device, DeviceTypeEnum
+from .device import Device, DeviceTypeEnum
 from .device_features import DeviceFeatureEnum
 from .tcl_entity_base import TclEntityBase, TclNonPollingEntityBase
 from .self_diagnostics import SelfDiagnostics

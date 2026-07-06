@@ -151,20 +151,6 @@ class DesiredStateHandlerForSelect:
                         DeviceFeatureEnum.MODE_AC_AUTO in self.device.supported_features
                     ),
                 )
-            case DeviceFeatureEnum.SELECT_PORTABLE_WIND_4VALUE_SPEED:
-                return getPortableWind4ValueSeed(
-                    wind_speed=self.device.data.wind_speed,
-                    has_auto_mode=(
-                        DeviceFeatureEnum.MODE_AC_AUTO in self.device.supported_features
-                    ),
-                )
-            case DeviceFeatureEnum.SELECT_PORTABLE_WIND_4VALUE_SPEED:
-                return getPortableWind4ValueSeed(
-                    wind_speed=self.device.data.wind_speed,
-                    has_auto_mode=(
-                        DeviceFeatureEnum.MODE_AC_AUTO in self.device.supported_features
-                    ),
-                )
             case DeviceFeatureEnum.SELECT_GENERATOR_MODE:
                 return getGeneratorMode(self.device.data.generator_mode)
             case DeviceFeatureEnum.SELECT_FRESH_AIR:
@@ -1246,7 +1232,6 @@ class SelectHandler(TclEntityBase, SelectEntity):
         return self.iot_handler.current_state()
 
     async def async_select_option(self, option: str) -> None:
-        # _LOGGER.info("SelectHandler.async_select_option: %s", option)
         await self.iot_handler.call_select_option(option)
         await self.coordinator.async_refresh()
 

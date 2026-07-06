@@ -3,7 +3,6 @@
 import logging
 from typing import Any
 
-# import asyncio>
 from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityFeature,

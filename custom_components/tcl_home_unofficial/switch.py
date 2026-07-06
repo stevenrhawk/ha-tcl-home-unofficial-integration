@@ -223,7 +223,6 @@ class DesiredStateHandlerForSwitch:
             in self.device.supported_features
         ):
             desired_state["highTemperatureWind"] = 0
-            desired_state["highTemperatureWind"] = 0
             desired_state["silenceSwitch"] = 0
             desired_state["windSpeed"] = 0
 

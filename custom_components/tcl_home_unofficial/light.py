@@ -7,18 +7,10 @@ from math import floor
 
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
-    ATTR_COLOR_TEMP_KELVIN,
-    ATTR_EFFECT,
-    ATTR_HS_COLOR,
-    ATTR_RGBW_COLOR,
-    ATTR_RGBWW_COLOR,
-    ATTR_WHITE,
     DEFAULT_MAX_KELVIN,
     DEFAULT_MIN_KELVIN,
-    EFFECT_OFF,
     ColorMode,
     LightEntity,
-    LightEntityFeature,
 )
 
 from homeassistant.config_entries import ConfigEntry

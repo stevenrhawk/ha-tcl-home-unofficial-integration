@@ -468,18 +468,3 @@ async def store_rn_prode_data(
     if need_save:
         await set_stored_data(hass, device_id, stored_data)
     return await get_stored_data(hass, device_id)
-
-
-async def store_rn_prode_data(
-    hass: HomeAssistant, device_id, rn_probe_data: dict
-) -> dict:
-    stored_data = await get_stored_data(hass, device_id)
-    stored_data, need_save = safe_set_value(
-        data=stored_data,
-        path="non_user_config.rn_probe_data",
-        value=rn_probe_data,
-        overwrite_if_exists=True,
-    )
-    if need_save:
-        await set_stored_data(hass, device_id, stored_data)
-    return await get_stored_data(hass, device_id)

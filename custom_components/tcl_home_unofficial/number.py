@@ -71,7 +71,6 @@ class DesiredStateHandlerForNumber:
         mode = self.device.mode_value_to_enum_mapp.get(
             self.device.data.work_mode, ModeEnum.AUTO
         )
-        # _LOGGER.info("Storing target temperature %s for mode %s in device storage %s",value,mode,self.device.device_id)
         stored_data["target_temperature"][mode]["value"] = value
         self.device.storage = stored_data
         await set_stored_data(self.hass, self.device.device_id, stored_data)
@@ -82,14 +81,11 @@ class DesiredStateHandlerForNumber:
         mode = self.device.mode_value_to_enum_mapp.get(
             self.device.data.work_mode, DehumidifierModeEnum.DRY
         )
-        # _LOGGER.info("Storing target temperature %s for mode %s in device storage %s",value,mode,self.device.device_id)
         stored_data["humidity"][mode]["value"] = value
         self.device.storage = stored_data
         await set_stored_data(self.hass, self.device.device_id, stored_data)
 
     async def NUMBER_TARGET_TEMPERATURE(self, value: int | float):
-        # _LOGGER.info("Setting target temperature to %s %s", value, self.device)        
-
         min_temp = safe_get_value(self.device.storage,"user_config.settings.min_temp",18)
         max_temp = safe_get_value(self.device.storage,"user_config.settings.max_temp",36)
 
