@@ -11,7 +11,7 @@ device's diagnostic data and must match the TCL API exactly.
 from homeassistant.core import HomeAssistant
 
 from .calculations import try_get_value
-from .data_storage import get_stored_data, safe_set_value, set_stored_data, setup_common_init_values
+from .data_storage import init_stored_device_data
 from .device_enums import ModeEnum
 from .device_features import DeviceFeatureEnum
 
@@ -76,42 +76,28 @@ async def get_stored_cylindrical_ac_data(
     These stored values remember user preferences across restarts,
     e.g. the last temperature set in each mode, or the fan speed per mode.
     """
-    need_save = False
-    stored_data = await get_stored_data(hass, device_id)
-    if stored_data is None:
-        stored_data = {}
-        need_save = True
-
-    # Common init values shared across all device types
-    stored_data, need_save = setup_common_init_values(stored_data)
-
-    # User-configurable behaviors (can be toggled via HA switches)
-    stored_data, need_save = safe_set_value(stored_data, "user_config.behavior.memorize_temp_by_mode", False)
-    stored_data, need_save = safe_set_value(stored_data, "user_config.behavior.memorize_fan_speed_by_mode", False)
-    stored_data, need_save = safe_set_value(stored_data, "user_config.behavior.silent_beep_when_turn_on", False)
-
-    stored_data, need_save = safe_set_value(stored_data, "user_config.settings.native_temp_step", 1.0)
-    stored_data, need_save = safe_set_value(stored_data, "user_config.settings.min_temp", 16)
-    stored_data, need_save = safe_set_value(stored_data, "user_config.settings.max_temp", 31)
-
-    # Default temperatures per mode
-    stored_data, need_save = safe_set_value(stored_data, "target_temperature.Cool.value", 24)
-    stored_data, need_save = safe_set_value(stored_data, "target_temperature.Heat.value", 24)
-    stored_data, need_save = safe_set_value(stored_data, "target_temperature.Dehumidification.value", 24)
-    stored_data, need_save = safe_set_value(stored_data, "target_temperature.Fan.value", 24)
-    stored_data, need_save = safe_set_value(stored_data, "target_temperature.Auto.value", 24)
-
-    # Default fan speed per mode
     default_wind_speed = "Auto"
-    stored_data, need_save = safe_set_value(stored_data, "fan_speed.Cool.value", default_wind_speed)
-    stored_data, need_save = safe_set_value(stored_data, "fan_speed.Heat.value", default_wind_speed)
-    stored_data, need_save = safe_set_value(stored_data, "fan_speed.Dehumidification.value", default_wind_speed)
-    stored_data, need_save = safe_set_value(stored_data, "fan_speed.Fan.value", default_wind_speed)
-    stored_data, need_save = safe_set_value(stored_data, "fan_speed.Auto.value", default_wind_speed)
-
-    if need_save:
-        await set_stored_data(hass, device_id, stored_data)
-    return stored_data
+    return await init_stored_device_data(hass, device_id, [
+        # User-configurable behaviors (can be toggled via HA switches)
+        ("user_config.behavior.memorize_temp_by_mode", False),
+        ("user_config.behavior.memorize_fan_speed_by_mode", False),
+        ("user_config.behavior.silent_beep_when_turn_on", False),
+        ("user_config.settings.native_temp_step", 1.0),
+        ("user_config.settings.min_temp", 16),
+        ("user_config.settings.max_temp", 31),
+        # Default temperatures per mode
+        ("target_temperature.Cool.value", 24),
+        ("target_temperature.Heat.value", 24),
+        ("target_temperature.Dehumidification.value", 24),
+        ("target_temperature.Fan.value", 24),
+        ("target_temperature.Auto.value", 24),
+        # Default fan speed per mode
+        ("fan_speed.Cool.value", default_wind_speed),
+        ("fan_speed.Heat.value", default_wind_speed),
+        ("fan_speed.Dehumidification.value", default_wind_speed),
+        ("fan_speed.Fan.value", default_wind_speed),
+        ("fan_speed.Auto.value", default_wind_speed),
+    ])
 
 
 def handle_cylindrical_ac_mode_change(

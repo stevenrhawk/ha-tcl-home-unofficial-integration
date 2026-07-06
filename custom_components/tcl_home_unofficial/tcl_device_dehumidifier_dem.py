@@ -3,7 +3,7 @@
 from homeassistant.core import HomeAssistant
 
 from .calculations import try_get_value
-from .data_storage import get_stored_data, safe_set_value, set_stored_data,setup_common_init_values
+from .data_storage import init_stored_device_data
 from .device_enums import DehumidifierModeEnum
 from .device_features import DeviceFeatureEnum
 
@@ -22,24 +22,13 @@ class TCL_Dehumidifier_DEM_DeviceData:
 async def get_stored_dehumidifier_dem_data(
     hass: HomeAssistant, device_id: str
 ) -> dict[str, any]:
-    need_save = False
-    stored_data = await get_stored_data(hass, device_id)
-    if stored_data is None:
-        stored_data = {}
-        need_save = True
-    
-    stored_data, need_save = setup_common_init_values(stored_data)
-    
-    stored_data, need_save = safe_set_value(stored_data, "user_config.behavior.memorize_humidity_by_mode", False)
-
-    stored_data, need_save = safe_set_value(stored_data, "humidity.Dry.value", 60)
-    stored_data, need_save = safe_set_value(stored_data, "humidity.Turbo.value", 35)
-    stored_data, need_save = safe_set_value(stored_data, "humidity.Comfort.value", 50)
-    stored_data, need_save = safe_set_value(stored_data, "humidity.Continue.value", 15)
-
-    if need_save:
-        await set_stored_data(hass, device_id, stored_data)
-    return stored_data
+    return await init_stored_device_data(hass, device_id, [
+        ("user_config.behavior.memorize_humidity_by_mode", False),
+        ("humidity.Dry.value", 60),
+        ("humidity.Turbo.value", 35),
+        ("humidity.Comfort.value", 50),
+        ("humidity.Continue.value", 15),
+    ])
 
 
 def handle_dehumidifier_dem_mode_change(desired_state:dict, value:DehumidifierModeEnum, supported_features: list[DeviceFeatureEnum], stored_data: dict) -> dict:

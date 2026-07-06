@@ -170,3 +170,31 @@ def setup_common_init_values(stored_data):
     stored_data, need_save = safe_set_value(stored_data, "non_user_config.work_time.last_response.timestamp", 1759400000)
     stored_data, need_save = safe_set_value(stored_data, "non_user_config.work_time.last_response.data", {})
     return stored_data, need_save
+
+
+async def init_stored_device_data(
+    hass: HomeAssistant, device_id: str, defaults: list[tuple[str, any]]
+) -> dict[str, any]:
+    """Load a device's stored data and seed per-device defaults.
+
+    Shared skeleton of the per-device get_stored_*_data initializers:
+    load stored data, create it if missing, apply the common init values,
+    then apply each (path, value) default in order via safe_set_value,
+    saving at the end if needed.
+
+    Note: need_save is intentionally overwritten (not accumulated) by each
+    call, exactly mirroring the per-device initializers this consolidates.
+    """
+    need_save = False
+    stored_data = await get_stored_data(hass, device_id)
+    if stored_data is None:
+        stored_data = {}
+        need_save = True
+    stored_data, need_save = setup_common_init_values(stored_data)
+
+    for path, value in defaults:
+        stored_data, need_save = safe_set_value(stored_data, path, value)
+
+    if need_save:
+        await set_stored_data(hass, device_id, stored_data)
+    return stored_data
