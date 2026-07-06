@@ -1,7 +1,6 @@
 """."""
 
 import logging
-from dataclasses import dataclass
 
 from homeassistant.core import HomeAssistant
 
@@ -11,7 +10,6 @@ from .data_storage import (get_stored_data, safe_set_value, set_stored_data,
 
 _LOGGER = logging.getLogger(__name__)
 
-@dataclass
 class TCL_Breeva_DeviceData:
     def __init__(self, device_id: str, aws_thing_state: dict, delta: dict) -> None:
         self.device_id = device_id
@@ -43,25 +41,6 @@ class TCL_Breeva_DeviceData:
         self.timer_remaining = int(try_get_value(delta, aws_thing_state, "timerRemaining", -1))
         self.panel_light_auto_off = int(try_get_value(delta, aws_thing_state, "panelLightAutoOFF", -1))
         self.favourite_mode_switch = int(try_get_value(delta, aws_thing_state, "favouriteModeSwitch", -1))
-
-
-    device_id: str
-    power_switch: int | bool
-    pm25_sensor_value: int | bool
-    voc_sensor_level: int | bool
-    pm25_sensor_level: int | bool
-    filter_life_time: int | bool
-    work_mode: int | bool
-    wind_speed: int | bool
-    screen_switch: int | bool
-    anion_switch: int | bool
-    shield_switch: int | bool
-    child_lock_switch: int | bool
-    timer_remaining: int | bool
-    panel_light_auto_off: int | bool
-    favourite_mode_switch: int | bool
-    ambient_light_power_switch: int | bool
-    ambient_light_brightness: int | bool
 
 async def get_stored_breeva_data(
     hass: HomeAssistant, device_id: str

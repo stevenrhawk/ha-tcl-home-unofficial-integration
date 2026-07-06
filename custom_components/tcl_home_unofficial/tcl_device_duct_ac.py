@@ -1,7 +1,5 @@
 """."""
 
-from dataclasses import dataclass
-
 from homeassistant.core import HomeAssistant
 
 from .calculations import try_get_value
@@ -10,7 +8,6 @@ from .device_enums import ModeEnum
 from .device_features import DeviceFeatureEnum
 
 
-@dataclass
 class TCL_DuctAC_DeviceData:
     def __init__(self, device_id: str, aws_thing_state: dict, delta: dict) -> None:
         self.device_id = device_id
@@ -29,22 +26,6 @@ class TCL_DuctAC_DeviceData:
         self.wind_speed_7_gear          = int(try_get_value(delta, aws_thing_state, "windSpeed7Gear", -1))
         self.ai_eco                     = int(try_get_value(delta, aws_thing_state, "AIECOSwitch", -1))
         self.external_unit_temperature  = int(try_get_value(delta, aws_thing_state, "externalUnitTemperature", -1))
-
-    device_id: str
-    power_switch: int | bool
-    beep_switch: int | bool
-    target_temperature: int
-    current_temperature: int
-    vertical_direction: int
-    sleep: int
-    anti_moldew: int
-    self_clean: int
-    eight_add_hot: int
-    screen: int
-    wind_speed_7_gear: int
-    ai_eco: int
-    wind_speed_auto_switch: int
-    external_unit_temperature: int
 
 
 async def get_stored_duct_ac_data(

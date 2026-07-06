@@ -1,7 +1,5 @@
 """."""
 
-from dataclasses import dataclass
-
 from homeassistant.core import HomeAssistant
 
 from .calculations import try_get_value
@@ -10,7 +8,6 @@ from .device_enums import ModeEnum
 from .device_features import DeviceFeatureEnum
 
 
-@dataclass
 class TCL_SplitAC_DeviceData:
     def __init__(self, device_id: str, aws_thing_state: dict, delta: dict) -> None:
         self.device_id = device_id
@@ -47,41 +44,6 @@ class TCL_SplitAC_DeviceData:
         self.new_wind_auto_switch       = int(try_get_value(delta, aws_thing_state, "newWindAutoSwitch", -1))
         self.new_wind_strength          = int(try_get_value(delta, aws_thing_state, "newWindStrength", -1))
         self.sensor_TVOC_value          = float(try_get_value(delta, aws_thing_state, "sensorTVOCValue", -1))
-        
-
-    device_id: str
-    power_switch: int | bool
-    beep_switch: int | bool
-    target_temperature: float
-    current_temperature: float
-    target_fahrenheit_temp: int
-    temperature_type: int
-    high_temperature_wind: int
-    turbo: int
-    silence_switch: int
-    wind_speed: int
-    vertical_switch: int
-    vertical_direction: int
-    horizontal_switch: int
-    horizontal_direction: int
-    sleep: int
-    healthy: int
-    eco: int
-    anti_moldew: int
-    self_clean: int
-    eight_add_hot: int
-    screen: int
-    wind_speed_7_gear: int
-    ai_eco: int
-    wind_speed_auto_switch: int
-    soft_wind: int
-    external_unit_temperature: int
-    generator_mode: int
-    sensor_TVOC_level: int
-    sensor_TVOC_value: float
-    new_wind_switch: int
-    new_wind_auto_switch: int
-    new_wind_strength: int
 
 async def get_stored_spit_ac_data(
     hass: HomeAssistant, device_id: str

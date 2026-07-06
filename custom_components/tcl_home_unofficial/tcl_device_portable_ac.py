@@ -1,7 +1,5 @@
 """."""
 
-from dataclasses import dataclass
-
 from homeassistant.core import HomeAssistant
 
 from .calculations import celsius_to_fahrenheit
@@ -11,7 +9,6 @@ from .device_enums import ModeEnum
 from .device_features import DeviceFeatureEnum
 
 
-@dataclass
 class TCL_PortableAC_DeviceData:
     def __init__(self, device_id: str, aws_thing_state: dict, delta: dict) -> None:
         self.device_id = device_id
@@ -25,18 +22,6 @@ class TCL_PortableAC_DeviceData:
         self.temperature_type           = int(try_get_value(delta, aws_thing_state, "temperatureType", -1))
         self.sleep                      = int(try_get_value(delta, aws_thing_state, "sleep", -1))
         self.current_temperature        = int(try_get_value(delta, aws_thing_state, "currentTemperature", -1))
-
-    device_id: str
-    power_switch: int | bool
-    wind_speed: int | bool
-    swing_wind: int | bool
-    work_mode: int | bool
-    target_fahrenheit_degree: int | bool
-    target_temperature: int | bool
-    target_celsius_degree: int | bool
-    temperature_type: int | bool
-    sleep: int | bool
-    current_temperature: int
 
 
 async def get_stored_portable_ac_data(

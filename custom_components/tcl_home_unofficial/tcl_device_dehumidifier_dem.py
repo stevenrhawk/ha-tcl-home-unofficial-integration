@@ -1,7 +1,5 @@
 """."""
 
-from dataclasses import dataclass
-
 from homeassistant.core import HomeAssistant
 
 from .calculations import try_get_value
@@ -10,7 +8,6 @@ from .device_enums import DehumidifierModeEnum
 from .device_features import DeviceFeatureEnum
 
 
-@dataclass
 class TCL_Dehumidifier_DEM_DeviceData:
     def __init__(self, device_id: str, aws_thing_state: dict, delta: dict) -> None:
         self.device_id = device_id
@@ -20,13 +17,6 @@ class TCL_Dehumidifier_DEM_DeviceData:
         self.env_humidity               = int(try_get_value(delta, aws_thing_state, "envHumidity", -1))
         self.error_code                 = list[int](try_get_value(delta, aws_thing_state, "errorCode", []))
 
-    device_id: str
-    power_switch: int | bool
-    work_mode: int | bool
-    humidity: int | bool
-    env_humidity: int | bool
-    error_code: list[int]
-    
 
 
 async def get_stored_dehumidifier_dem_data(

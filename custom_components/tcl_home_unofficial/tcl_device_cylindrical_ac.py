@@ -8,8 +8,6 @@ The field names (e.g. "powerSwitch", "windSpeed7Gear") come directly from the
 device's diagnostic data and must match the TCL API exactly.
 """
 
-from dataclasses import dataclass
-
 from homeassistant.core import HomeAssistant
 
 from .calculations import try_get_value
@@ -18,7 +16,6 @@ from .device_enums import ModeEnum
 from .device_features import DeviceFeatureEnum
 
 
-@dataclass
 class TCL_CylindricalAC_DeviceData:
     """Parses the AWS Thing State for a Cylindrical AC device.
 
@@ -69,33 +66,6 @@ class TCL_CylindricalAC_DeviceData:
         self.external_unit_temperature      = int(try_get_value(delta, aws_thing_state, "externalUnitTemperature", -1))
         self.self_clean_status              = int(try_get_value(delta, aws_thing_state, "selfCleanStatus", -1))
         self.error_code                     = list(try_get_value(delta, aws_thing_state, "errorCode", []))
-
-    # --- Type annotations (required by the @dataclass decorator) ---
-    device_id: str
-    power_switch: int | bool
-    work_mode: int | bool
-    sleep: int | bool
-    target_temperature: int
-    current_temperature: int
-    target_fahrenheit_temp: int
-    temperature_type: int
-    wind_speed_7_gear: int
-    wind_speed_auto_switch: int
-    vertical_wind: int
-    horizontal_wind: int
-    vertical_direction: int
-    horizontal_direction: int
-    beep_switch: int | bool
-    screen: int | bool
-    ai_eco: int | bool
-    healthy: int | bool
-    anti_moldew: int | bool
-    anti_direct_blow: int | bool
-    generator_mode: int
-    internal_unit_coil_temperature: int
-    external_unit_temperature: int
-    self_clean_status: int
-    error_code: list[int]
 
 
 async def get_stored_cylindrical_ac_data(

@@ -1,7 +1,5 @@
 """."""
 
-from dataclasses import dataclass
-
 from homeassistant.core import HomeAssistant
 
 from .calculations import try_get_value
@@ -10,7 +8,6 @@ from .device_enums import ModeEnum
 from .device_features import DeviceFeatureEnum
 
 
-@dataclass
 class TCL_WindowAC_DeviceData:
     def __init__(self, device_id: str, aws_thing_state: dict, delta: dict) -> None:
         self.device_id = device_id
@@ -29,17 +26,6 @@ class TCL_WindowAC_DeviceData:
         self.eco = int(try_get_value(delta, aws_thing_state, "ECO", -1))
         self.beep_switch = int(try_get_value(delta, aws_thing_state, "beepSwitch", -1))
         self.screen = int(try_get_value(delta, aws_thing_state, "screen", -1))
-
-    device_id: str
-    power_switch: int | bool
-    wind_speed: int | bool
-    work_mode: int | bool
-    target_temperature: float | bool
-    current_temperature: float | bool
-    sleep: int | bool
-    eco: int
-    beep_switch: int | bool
-    screen: int | bool
 
 
 async def get_stored_window_ac_data(
