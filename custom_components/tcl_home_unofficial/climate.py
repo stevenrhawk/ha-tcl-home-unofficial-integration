@@ -3,6 +3,7 @@
 import logging
 from typing import Any
 
+from homeassistant.components.climate.const import PRESET_ECO, PRESET_SLEEP, PRESET_NONE
 from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityFeature,
@@ -287,6 +288,7 @@ class ClimateHandler(TclEntityBase, ClimateEntity):
         self._attr_supported_features = ClimateEntityFeature(0)
         self._attr_supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
         self._attr_supported_features |= ClimateEntityFeature.FAN_MODE
+        self._attr_supported_features |= ClimateEntityFeature.PRESET_MODE
         self._attr_supported_features |= ClimateEntityFeature.TURN_OFF
         self._attr_supported_features |= ClimateEntityFeature.TURN_ON
 
@@ -319,8 +321,24 @@ class ClimateHandler(TclEntityBase, ClimateEntity):
 
         self._target_humidity = None
         self._unit_of_measurement = UnitOfTemperature.CELSIUS
-        self._preset = None
-        self._preset_modes = None
+
+        self._preset_modes = [PRESET_NONE]
+        
+        self.iot_handler_eco = None
+        if DeviceFeatureEnum.SWITCH_ECO in device.supported_features:
+            self._preset_modes.append(PRESET_ECO)
+            self.iot_handler_eco = DesiredStateHandlerForSwitch(hass=hass, coordinator=coordinator, deviceFeature=DeviceFeatureEnum.SWITCH_ECO, device=device)
+            
+        self.iot_handler_sleep = None
+        if DeviceFeatureEnum.SELECT_SLEEP_MODE in device.supported_features:
+            self._preset_modes.append(PRESET_SLEEP)
+            self.iot_handler_sleep = DesiredStateHandlerForSelect(hass=hass, coordinator=coordinator, deviceFeature=DeviceFeatureEnum.SELECT_SLEEP_MODE, device=device)
+        elif DeviceFeatureEnum.SWITCH_SLEEP in device.supported_features:
+            self._preset_modes.append(PRESET_SLEEP)
+            self.iot_handler_sleep = DesiredStateHandlerForSwitch(hass=hass, coordinator=coordinator, deviceFeature=DeviceFeatureEnum.SWITCH_SLEEP, device=device)
+            
+        self._preset = PRESET_NONE
+
         self._current_humidity = None
 
         self._current_fan_mode = self.current_fan_speed_fn(device)
@@ -359,6 +377,12 @@ class ClimateHandler(TclEntityBase, ClimateEntity):
         if self.horizontal_air_direction_select_feature is not None:
             self.iot_handler_horizontal_air_direction.refreshDevice(self.device)
 
+        if self.iot_handler_eco:
+            self.iot_handler_eco.refreshDevice(self.device)
+        if self.iot_handler_sleep:
+            self.iot_handler_sleep.refreshDevice(self.device)
+
+
     @property
     def current_temperature(self) -> float:
         self.refresh_device()
@@ -368,6 +392,55 @@ class ClimateHandler(TclEntityBase, ClimateEntity):
     def target_temperature(self) -> float | None:
         self.refresh_device()
         return float(self.current_target_temp_fn(self.device))
+
+
+    @property
+    def preset_mode(self) -> str | None:
+        self.refresh_device()
+        
+        if self.iot_handler_eco and self.device.data.eco == 1:
+            return PRESET_ECO
+            
+        if self.iot_handler_sleep:
+            # sleep is stored as int in device.data.sleep
+            sleep_val = getattr(self.device.data, 'sleep', 0)
+            if DeviceFeatureEnum.SELECT_SLEEP_MODE in self.device.supported_features:
+                if sleep_val and sleep_val != 0:
+                    return PRESET_SLEEP
+            elif sleep_val == 1:
+                return PRESET_SLEEP
+                
+        return PRESET_NONE
+
+    @property
+    def preset_modes(self) -> list[str]:
+        return self._preset_modes
+
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
+        if preset_mode == PRESET_ECO and self.iot_handler_eco:
+            await self.iot_handler_eco.call_switch(1)
+            if self.iot_handler_sleep:
+                if DeviceFeatureEnum.SELECT_SLEEP_MODE in self.device.supported_features:
+                    await self.iot_handler_sleep.call_select_option("off")
+                else:
+                    await self.iot_handler_sleep.call_switch(0)
+        elif preset_mode == PRESET_SLEEP and self.iot_handler_sleep:
+            if DeviceFeatureEnum.SELECT_SLEEP_MODE in self.device.supported_features:
+                await self.iot_handler_sleep.call_select_option("standard")
+            else:
+                await self.iot_handler_sleep.call_switch(1)
+            if self.iot_handler_eco:
+                await self.iot_handler_eco.call_switch(0)
+        else:
+            if self.iot_handler_eco:
+                await self.iot_handler_eco.call_switch(0)
+            if self.iot_handler_sleep:
+                if DeviceFeatureEnum.SELECT_SLEEP_MODE in self.device.supported_features:
+                    await self.iot_handler_sleep.call_select_option("off")
+                else:
+                    await self.iot_handler_sleep.call_switch(0)
+                    
+        await self.coordinator.async_refresh()
 
     @property
     def hvac_mode(self) -> HVACMode:

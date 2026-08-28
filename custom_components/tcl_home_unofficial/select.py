@@ -927,7 +927,7 @@ async def async_setup_entry(
             device.device_type,
             device.supported_features,
         )
-        if DeviceFeatureEnum.SELECT_MODE in device.supported_features:
+        if DeviceFeatureEnum.SELECT_MODE in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             switches.append(
                 SelectHandler(
                     hass=hass,
@@ -945,7 +945,7 @@ async def async_setup_entry(
             and device.device_type != DeviceTypeEnum.AIR_PURIFIER_BREEVA_A3
             and device.device_type != DeviceTypeEnum.AIR_PURIFIER_BREEVA_A5
         ):
-            if DeviceFeatureEnum.SELECT_WIND_SPEED in device.supported_features:
+            if DeviceFeatureEnum.SELECT_WIND_SPEED in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
                 switches.append(
                     DynamicSelectHandler(
                         hass=hass,
@@ -968,7 +968,7 @@ async def async_setup_entry(
             or device.device_type == DeviceTypeEnum.AIR_PURIFIER_BREEVA_A3
             or device.device_type == DeviceTypeEnum.AIR_PURIFIER_BREEVA_A5
         ):
-            if DeviceFeatureEnum.SELECT_WIND_SPEED in device.supported_features:
+            if DeviceFeatureEnum.SELECT_WIND_SPEED in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
                 # If the power is on or the work mode is not 0 (Auto), show the wind speed select
                 # Otherwise, disable the wind speed select
                 switches.append(
@@ -1012,7 +1012,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceFeatureEnum.SELECT_WINDOW_AS_WIND_SPEED in device.supported_features:
+        if DeviceFeatureEnum.SELECT_WINDOW_AS_WIND_SPEED in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             switches.append(
                 SelectHandler(
                     hass=hass,
@@ -1041,7 +1041,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceFeatureEnum.SELECT_WIND_SPEED_7_GEAR in device.supported_features:
+        if DeviceFeatureEnum.SELECT_WIND_SPEED_7_GEAR in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             switches.append(
                 SelectHandler(
                     hass=hass,
@@ -1054,7 +1054,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceFeatureEnum.SELECT_PORTABLE_WIND_SPEED in device.supported_features:
+        if DeviceFeatureEnum.SELECT_PORTABLE_WIND_SPEED in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             switches.append(
                 DynamicSelectHandler(
                     hass=hass,
@@ -1076,6 +1076,7 @@ async def async_setup_entry(
         if (
             DeviceFeatureEnum.SELECT_PORTABLE_WIND_4VALUE_SPEED
             in device.supported_features
+            and DeviceFeatureEnum.CLIMATE not in device.supported_features
         ):
             switches.append(
                 DynamicSelectHandler(
@@ -1138,7 +1139,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceFeatureEnum.SELECT_VERTICAL_DIRECTION in device.supported_features:
+        if DeviceFeatureEnum.SELECT_VERTICAL_DIRECTION in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             switches.append(
                 SelectHandler(
                     hass=hass,
@@ -1151,7 +1152,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceFeatureEnum.SELECT_HORIZONTAL_DIRECTION in device.supported_features:
+        if DeviceFeatureEnum.SELECT_HORIZONTAL_DIRECTION in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             switches.append(
                 SelectHandler(
                     hass=hass,
@@ -1164,7 +1165,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceFeatureEnum.SELECT_SLEEP_MODE in device.supported_features:
+        if DeviceFeatureEnum.SELECT_SLEEP_MODE in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             switches.append(
                 DynamicSelectHandler(
                     hass=hass,

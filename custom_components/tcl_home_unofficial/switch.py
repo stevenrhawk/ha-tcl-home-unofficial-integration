@@ -306,7 +306,7 @@ async def async_setup_entry(
     coordinator = config_entry.runtime_data.coordinator
     switches = []
     for device in config_entry.devices:
-        if DeviceFeatureEnum.SWITCH_POWER in device.supported_features:
+        if DeviceFeatureEnum.SWITCH_POWER in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             switches.append(
                 SwitchHandler(
                     hass=hass,
@@ -429,7 +429,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceFeatureEnum.SWITCH_ECO in device.supported_features:
+        if DeviceFeatureEnum.SWITCH_ECO in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             switches.append(
                 DynamicSwitchHandler(
                     hass=hass,
@@ -445,7 +445,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceFeatureEnum.SWITCH_AI_ECO in device.supported_features:
+        if DeviceFeatureEnum.SWITCH_AI_ECO in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             switches.append(
                 DynamicSwitchHandler(
                     hass=hass,
@@ -555,7 +555,7 @@ async def async_setup_entry(
                 )
             )
 
-        if DeviceFeatureEnum.SWITCH_SLEEP in device.supported_features:
+        if DeviceFeatureEnum.SWITCH_SLEEP in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             switches.append(
                 DynamicSwitchHandler(
                     hass=hass,

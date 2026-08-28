@@ -1,6 +1,9 @@
 # ha-tcl-home-unofficial-integration  
 **TCL Home - Home Assistant integration (unofficial)**
 
+> **Note:** This is a fork of [nemesa/ha-tcl-home-unofficial-integration](https://github.com/nemesa/ha-tcl-home-unofficial-integration). It contains custom modifications and cleanups for Home Assistant.
+
+
 ## Supported device types
 - Split AC
 - Split AC Fresh air

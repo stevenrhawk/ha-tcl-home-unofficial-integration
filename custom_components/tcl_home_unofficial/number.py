@@ -189,7 +189,7 @@ async def async_setup_entry(
 
     customEntities = []
     for device in config_entry.devices:
-        if DeviceFeatureEnum.NUMBER_TARGET_TEMPERATURE in device.supported_features:
+        if DeviceFeatureEnum.NUMBER_TARGET_TEMPERATURE in device.supported_features and DeviceFeatureEnum.CLIMATE not in device.supported_features:
             customEntities.append(
                 TemperatureHandler(
                     hass=hass,
